@@ -123,7 +123,7 @@ sub _check_dbmss {
 
             # make sure the source is defined
             if(!$src_ip) {
-                say ' ERROR - Source IP for '.$dbms.' not defined!';
+                say ' WARNING - Source IP for '.$dbms.' not defined!';
             }
             $num_dbms++;
 
@@ -194,22 +194,6 @@ sub _check_dbms {
         say ' OK - DBH connection working for '.$dbms;
     } else {
         say ' ERROR - DBH connection failed! Check connection credentials for '.$dbms;
-        return;
-    }
-
-    # check if pw-less ssh access works
-    if($self->_check_dbms_ssh_connection($dbms)) {
-        say ' OK - SSH access working to '.$dbms;
-    } else {
-        say ' ERROR - SSH access failed! Check your public key setup for '.$dbms;
-        return;
-    }
-
-    # check ftp binary via ssh (can't check connection w/o ftp server ...)
-    if($self->_check_dbms_ftp($dbms)) {
-        say ' OK - FTP binary found on '.$dbms;
-    } else {
-        say ' ERROR - FTP binary not found. Maybe you should install curl on '.$dbms;
         return;
     }
 

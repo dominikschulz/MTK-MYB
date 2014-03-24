@@ -1,4 +1,7 @@
 Revision history for MTK-MYB
 
+0.30  2014-03-24
+      Bugfix to configcheck command
+
 0.28	2012-12-26
-        First public version, released on an unsuspecting world.
+      First public version, released on an unsuspecting world.
