@@ -1,4 +1,5 @@
 package MTK::MYB::Cmd;
+
 # ABSTRACT: The MYB CLI
 
 use 5.010_000;
@@ -17,6 +18,7 @@ use namespace::autoclean;
 
 # extends ...
 extends 'MooseX::App::Cmd';
+
 # has ...
 # with ...
 # initializers ...

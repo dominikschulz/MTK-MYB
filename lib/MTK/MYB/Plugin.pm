@@ -1,4 +1,5 @@
 package MTK::MYB::Plugin;
+
 # ABSTRACT: baseclass for any MYB plugin
 
 use 5.010_000;
@@ -18,28 +19,30 @@ use namespace::autoclean;
 # extends ...
 # has ...
 has 'parent' => (
-    'is'    => 'rw',
-    'isa'   => 'MTK::MYB',
-    'required' => 1,
+  'is'       => 'rw',
+  'isa'      => 'MTK::MYB',
+  'required' => 1,
 );
 
 has 'priority' => (
-    'is'    => 'ro',
-    'isa'   => 'Int',
-    'lazy'  => 1,
-    'builder' => '_init_priority',
+  'is'      => 'ro',
+  'isa'     => 'Int',
+  'lazy'    => 1,
+  'builder' => '_init_priority',
 );
+
 # with ...
 with qw(Log::Tree::RequiredLogger Config::Yak::RequiredConfig);
+
 # initializers ...
 
 # your code here ...
-sub run_config_hook { return; }
-sub run_prepare_hook { return; }
+sub run_config_hook         { return; }
+sub run_prepare_hook        { return; }
 sub run_worker_prepare_hook { return; }
-sub run_cleanup_hook { return; }
+sub run_cleanup_hook        { return; }
 sub run_worker_cleanup_hook { return; }
-sub _init_priority { return 0; }
+sub _init_priority          { return 0; }
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

@@ -1,4 +1,5 @@
 package MTK::MYB::Cmd::Command::backupcheck;
+
 # ABSTRACT: Run the MYB backup checker
 
 use 5.010_000;
@@ -18,29 +19,30 @@ use MTK::MYB::Checker;
 
 # extends ...
 extends 'MTK::MYB::Cmd::Command';
+
 # has ...
 # with ...
 # initializers ...
 
 # your code here ...
 sub execute {
-    my $self = shift;
+  my $self = shift;
 
-    # check backup
-    my $Checker = MTK::MYB::Checker::->new(
-        {
-            'config'  => $self->config(),
-            'logger'  => $self->logger(),
-            'bank'    => $self->config()->get( 'MTK::MYB::Bank', { Default => '/srv/backup/mysql', } ),
-            'min_pc'  => $self->config()->get( 'MTK::MYB::Check::MinPC', { Default => 85, } ),
-            'max_age' => $self->config()->get( 'MTK::MYB::Check::MaxAge', { Default => 30, } ),
-        }
-    );
-    return $Checker->run();
-}
+  # check backup
+  my $Checker = MTK::MYB::Checker::->new(
+    {
+      'config'  => $self->config(),
+      'logger'  => $self->logger(),
+      'bank'    => $self->config()->get( 'MTK::MYB::Bank', { Default => '/srv/backup/mysql', } ),
+      'min_pc'  => $self->config()->get( 'MTK::MYB::Check::MinPC', { Default => 85, } ),
+      'max_age' => $self->config()->get( 'MTK::MYB::Check::MaxAge', { Default => 30, } ),
+    }
+  );
+  return $Checker->run();
+} ## end sub execute
 
 sub abstract {
-    return 'Check the integrity of your backups';
+  return 'Check the integrity of your backups';
 }
 
 no Moose;

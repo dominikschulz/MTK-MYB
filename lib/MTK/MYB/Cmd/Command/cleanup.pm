@@ -1,4 +1,5 @@
 package MTK::MYB::Cmd::Command::cleanup;
+
 # ABSTRACT: Cleanup left over backups
 
 use 5.010_000;
@@ -19,48 +20,53 @@ use MTK::MYB;
 
 # extends ...
 extends 'MTK::MYB::Cmd::Command';
+
 # has ...
 # with ...
 # initializers ...
 # your code here ...
 sub execute {
-    my $self = shift;
+  my $self = shift;
 
-    my $MYB = MTK::MYB::->new({
-        'config'    => $self->config(),
-        'logger'    => $self->logger(),
-    });
-
-    if(!$MYB->configure()) {
-        $self->logger()->log( message => 'Configure failed! Aborting!', level => 'debug', );
-        return;
+  my $MYB = MTK::MYB::->new(
+    {
+      'config' => $self->config(),
+      'logger' => $self->logger(),
     }
+  );
 
-    my $dbms_ref = $MYB->config()->get('MTK::MYB::DBMS');
-    if($dbms_ref && ref($dbms_ref) eq 'HASH') {
-        # check each DBMS if it is accessible
-        foreach my $dbms (sort keys %{$dbms_ref}) {
-            # rotate the backups
-            my $Rotor = Sys::RotateBackup::->new(
-                {
-                    'logger'  => $self->logger(),
-                    'sys'     => $MYB->sys(),
-                    'vault'   => $MYB->fs()->filename( ( $MYB->bank(), $dbms ) ),
-                    'daily'   => $self->config()->get( 'MTK::MYB::Rotations::Daily', { Default => 10, } ),
-                    'weekly'  => $self->config()->get( 'MTK::MYB::Rotations::Weekly', { Default => 4, } ),
-                    'monthly' => $self->config()->get( 'MTK::MYB::Rotations::Monthly', { Default => 12, } ),
-                    'yearly'  => $self->config()->get( 'MTK::MYB::Rotations::Yearly', { Default => 10, } ),
-                }
-            );
-            $Rotor->cleanup();
+  if ( !$MYB->configure() ) {
+    $self->logger()->log( message => 'Configure failed! Aborting!', level => 'debug', );
+    return;
+  }
+
+  my $dbms_ref = $MYB->config()->get('MTK::MYB::DBMS');
+  if ( $dbms_ref && ref($dbms_ref) eq 'HASH' ) {
+
+    # check each DBMS if it is accessible
+    foreach my $dbms ( sort keys %{$dbms_ref} ) {
+
+      # rotate the backups
+      my $Rotor = Sys::RotateBackup::->new(
+        {
+          'logger'  => $self->logger(),
+          'sys'     => $MYB->sys(),
+          'vault'   => $MYB->fs()->filename( ( $MYB->bank(), $dbms ) ),
+          'daily'   => $self->config()->get( 'MTK::MYB::Rotations::Daily', { Default => 10, } ),
+          'weekly'  => $self->config()->get( 'MTK::MYB::Rotations::Weekly', { Default => 4, } ),
+          'monthly' => $self->config()->get( 'MTK::MYB::Rotations::Monthly', { Default => 12, } ),
+          'yearly'  => $self->config()->get( 'MTK::MYB::Rotations::Yearly', { Default => 10, } ),
         }
-    }
+      );
+      $Rotor->cleanup();
+    } ## end foreach my $dbms ( sort keys...)
+  } ## end if ( $dbms_ref && ref(...))
 
-    return 1;
-}
+  return 1;
+} ## end sub execute
 
 sub abstract {
-    return 'Clean up old and/or broken backup dirs and files. Useful for migrations, otherwise seldomly useful.';
+  return 'Clean up old and/or broken backup dirs and files. Useful for migrations, otherwise seldomly useful.';
 }
 
 no Moose;

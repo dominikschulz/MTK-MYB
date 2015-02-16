@@ -1,4 +1,5 @@
 package MTK::MYB::Checker::Plugin::Zabbix;
+
 # ABSTRACT: a Zabbix Sender plugin for the MYB backup integrity checker
 
 use 5.010_000;
@@ -19,6 +20,7 @@ use Sys::Hostname::FQDN;
 
 # extends ...
 extends 'MTK::MYB::Checker::Plugin';
+
 # has ...
 # with ...
 # initializers ...
@@ -26,43 +28,43 @@ extends 'MTK::MYB::Checker::Plugin';
 # your code here ...
 
 sub run_cleanup_hook {
-    my $self = shift;
-    my $ok = shift;
+  my $self = shift;
+  my $ok   = shift;
 
-    my $hostname = Sys::Hostname::FQDN::fqdn();
-    my $item = $self->config()->get( 'MTK::MYB::Check::ZabbixItem', { Default => 'mysqlbackup.p49.fileage', } );
+  my $hostname = Sys::Hostname::FQDN::fqdn();
+  my $item = $self->config()->get( 'MTK::MYB::Check::ZabbixItem', { Default => 'mysqlbackup.p49.fileage', } );
 
-    return $self->zabbix_report($ok,$hostname,$item);
-}
+  return $self->zabbix_report( $ok, $hostname, $item );
+} ## end sub run_cleanup_hook
 
 sub zabbix_report {
-    my $self     = shift;
-    my $status   = shift;
-    my $hostname = shift;
-    my $item     = shift;
+  my $self     = shift;
+  my $status   = shift;
+  my $hostname = shift;
+  my $item     = shift;
 
-    if ( my $zabbix_server = $self->config()->get('Zabbix::Server') ) {
-        $self->logger()->log( message => 'Using Zabbix Server at '.$zabbix_server, level => 'debug', );
-        my $arg_ref = {
-            'server' => $zabbix_server,
-            'port'   => $self->config()->get('Zabbix::Port') || 10_051,
-        };
-        $arg_ref->{'hostname'} = $hostname if $hostname;
-        try {
-            my $Zabbix = Zabbix::Sender::->new($arg_ref);
-            $Zabbix->send( $item, $status );
-            $Zabbix = undef;
-        }
-        catch {
-            $self->logger()->log( message => 'Zabbix::Sender failed w/ error: '.$_, level => 'error', );
-        };
-        return 1;
+  if ( my $zabbix_server = $self->config()->get('Zabbix::Server') ) {
+    $self->logger()->log( message => 'Using Zabbix Server at ' . $zabbix_server, level => 'debug', );
+    my $arg_ref = {
+      'server' => $zabbix_server,
+      'port'   => $self->config()->get('Zabbix::Port') || 10_051,
+    };
+    $arg_ref->{'hostname'} = $hostname if $hostname;
+    try {
+      my $Zabbix = Zabbix::Sender::->new($arg_ref);
+      $Zabbix->send( $item, $status );
+      $Zabbix = undef;
     }
-    else {
-        $self->logger()->log( message => 'No Zabbix Server configured.', level => 'debug', );
-        return;
-    }
-}
+    catch {
+      $self->logger()->log( message => 'Zabbix::Sender failed w/ error: ' . $_, level => 'error', );
+    };
+    return 1;
+  } ## end if ( my $zabbix_server...)
+  else {
+    $self->logger()->log( message => 'No Zabbix Server configured.', level => 'debug', );
+    return;
+  }
+} ## end sub zabbix_report
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

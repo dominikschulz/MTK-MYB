@@ -1,4 +1,5 @@
 package MTK::MYB;
+
 # ABSTRACT: MySQL Backup
 
 use 5.010_000;
@@ -27,51 +28,51 @@ use Sys::Run;
 use Sys::FS;
 
 has 'cacher' => (
-    'is'      => 'ro',
-    'isa'     => 'Data::Persist',
-    'lazy'    => 1,
-    'builder' => '_init_cacher',
+  'is'      => 'ro',
+  'isa'     => 'Data::Persist',
+  'lazy'    => 1,
+  'builder' => '_init_cacher',
 );
 
 has 'status' => (
-    'is'      => 'ro',
-    'isa'     => 'MTK::MYB::Status',
-    'lazy'    => 1,
-    'builder' => '_init_status',
+  'is'      => 'ro',
+  'isa'     => 'MTK::MYB::Status',
+  'lazy'    => 1,
+  'builder' => '_init_status',
 );
 
 has 'sys' => (
-    'is'      => 'rw',
-    'isa'     => 'Sys::Run',
-    'lazy'    => 1,
-    'builder' => '_init_sys',
+  'is'      => 'rw',
+  'isa'     => 'Sys::Run',
+  'lazy'    => 1,
+  'builder' => '_init_sys',
 );
 
 has 'fs' => (
-    'is'      => 'rw',
-    'isa'     => 'Sys::FS',
-    'lazy'    => 1,
-    'builder' => '_init_fs',
+  'is'      => 'rw',
+  'isa'     => 'Sys::FS',
+  'lazy'    => 1,
+  'builder' => '_init_fs',
 );
 
 has 'bank' => (
-    'is'      => 'ro',
-    'isa'     => 'Str',
-    'lazy'    => 1,
-    'builder' => '_init_bank',
+  'is'      => 'ro',
+  'isa'     => 'Str',
+  'lazy'    => 1,
+  'builder' => '_init_bank',
 );
 
 has 'status_cache_dir' => (
-    'is'      => 'ro',
-    'isa'     => 'Str',
-    'lazy'    => 1,
-    'builder' => '_init_status_cache_dir',
+  'is'      => 'ro',
+  'isa'     => 'Str',
+  'lazy'    => 1,
+  'builder' => '_init_status_cache_dir',
 );
 
 has 'debug' => (
-    'is'      => 'rw',
-    'isa'     => 'Bool',
-    'default' => 0,
+  'is'      => 'rw',
+  'isa'     => 'Bool',
+  'default' => 0,
 );
 
 with 'Config::Yak::OrderedPlugins' => { -version => 0.18 };
@@ -88,73 +89,73 @@ with 'Config::Yak::OrderedPlugins' => { -version => 0.18 };
 sub _plugin_base_class { return 'MTK::MYB::Plugin'; }
 
 sub BUILD {
-    my $self = shift;
+  my $self = shift;
 
-    # Important: Make sure to initialize the cache dir in the parent!
-    my $dir = $self->status_cache_dir();
+  # Important: Make sure to initialize the cache dir in the parent!
+  my $dir = $self->status_cache_dir();
 
-    return 1;
+  return 1;
 } ## end sub BUILD
 
 sub _init_status_cache_dir {
-    my $self = shift;
+  my $self = shift;
 
-    my $dir = File::Temp::tempdir( CLEANUP => 1, );
+  my $dir = File::Temp::tempdir( CLEANUP => 1, );
 
-    return $dir;
+  return $dir;
 } ## end sub _init_status_cache_dir
 
 sub _init_cacher {
-    my $self = shift;
+  my $self = shift;
 
-    my $Cacher = Data::Persist::->new(
-        {
-            'logger'   => $self->logger(),
-            'filename' => $self->status_cache_dir() . '/parent.cache',
-        }
-    );
+  my $Cacher = Data::Persist::->new(
+    {
+      'logger'   => $self->logger(),
+      'filename' => $self->status_cache_dir() . '/parent.cache',
+    }
+  );
 
-    return $Cacher;
+  return $Cacher;
 } ## end sub _init_cacher
 
 sub _init_bank {
-    my $self = shift;
+  my $self = shift;
 
-    return $self->config()->get( 'MTK::MYB::Bank', { Default => '/srv/backup/mysql', } );
+  return $self->config()->get( 'MTK::MYB::Bank', { Default => '/srv/backup/mysql', } );
 }
 
 sub _init_sys {
-    my $self = shift;
+  my $self = shift;
 
-    my $Sys = Sys::Run::->new( { 'logger' => $self->logger(), } );
+  my $Sys = Sys::Run::->new( { 'logger' => $self->logger(), } );
 
-    return $Sys;
+  return $Sys;
 } ## end sub _init_sys
 
 sub _init_fs {
-    my $self = shift;
+  my $self = shift;
 
-    my $FS = Sys::FS::->new(
-        {
-            'logger' => $self->logger(),
-            'sys'    => $self->sys(),
-        }
-    );
+  my $FS = Sys::FS::->new(
+    {
+      'logger' => $self->logger(),
+      'sys'    => $self->sys(),
+    }
+  );
 
-    return $FS;
+  return $FS;
 } ## end sub _init_fs
 
 sub _init_logger {
-    my $self = shift;
+  my $self = shift;
 
-    my $Log = Log::Tree::->new('mysqlbackup');
+  my $Log = Log::Tree::->new('mysqlbackup');
 
-    return $Log;
+  return $Log;
 } ## end sub _init_logger
 
 sub _init_status {
-    my $self = shift;
-    return MTK::MYB::Status::->new();
+  my $self = shift;
+  return MTK::MYB::Status::->new();
 }
 
 #############################
@@ -163,336 +164,344 @@ sub _init_status {
 # Those define the control flow
 
 sub _prepare {
-    my $self = shift;
+  my $self = shift;
 
-    if(!$self->configure()) {
-        $self->logger()->log( message => 'Configure step failed. Aborting!', level => 'error', );
-        return;
-    }
+  if ( !$self->configure() ) {
+    $self->logger()->log( message => 'Configure step failed. Aborting!', level => 'error', );
+    return;
+  }
 
-    foreach my $Plugin ( @{ $self->plugins() } ) {
-        try {
-            if($Plugin->run_prepare_hook()) {
-                $self->logger()->log( message => 'prepare hook of Plugin '.ref($Plugin).' run successfully.', level => 'debug', );
-            } else {
-                $self->logger()->log( message => 'prepare hook of Plugin '.ref($Plugin).' failed to run.', level => 'debug', );
-            }
-        }
-        catch {
-            $self->logger()->log( message => 'Failed to run prepare hook of ' . ref($Plugin) . ' w/ error: ' . $_, level => 'warning', );
-        };
-    } ## end foreach my $Plugin ( @{ $self...})
+  foreach my $Plugin ( @{ $self->plugins() } ) {
+    try {
+      if ( $Plugin->run_prepare_hook() ) {
+        $self->logger()->log( message => 'prepare hook of Plugin ' . ref($Plugin) . ' run successfully.', level => 'debug', );
+      }
+      else {
+        $self->logger()->log( message => 'prepare hook of Plugin ' . ref($Plugin) . ' failed to run.', level => 'debug', );
+      }
+    } ## end try
+    catch {
+      $self->logger()->log( message => 'Failed to run prepare hook of ' . ref($Plugin) . ' w/ error: ' . $_, level => 'warning', );
+    };
+  } ## end foreach my $Plugin ( @{ $self...})
 
-    return 1;
+  return 1;
 } ## end sub _prepare
 
 sub run {
-    my $self = shift;
+  my $self = shift;
 
-    $self->logger()->log( message => 'Backup starting', level => 'debug', );
+  $self->logger()->log( message => 'Backup starting', level => 'debug', );
 
-    # "preparatory" steps must succeed. if the backup was run
-    # we don't care about the results anymore and just try to
-    # clean up as much as possible
-    if ( !$self->_exec_pre() ) {
-        $self->_cleanup(0);
-        return;
-    }
-    if ( !$self->_prepare() ) {
-        $self->_cleanup(0);
-        return;
-    }
-    my $global_status = $self->_run();
+  # "preparatory" steps must succeed. if the backup was run
+  # we don't care about the results anymore and just try to
+  # clean up as much as possible
+  if ( !$self->_exec_pre() ) {
+    $self->_cleanup(0);
+    return;
+  }
+  if ( !$self->_prepare() ) {
+    $self->_cleanup(0);
+    return;
+  }
+  my $global_status = $self->_run();
 
-    # translate the (perlish) return code of the jobqueue to the (unixish) return
-    # code of the status object
-    if ($global_status) {
+  # translate the (perlish) return code of the jobqueue to the (unixish) return
+  # code of the status object
+  if ($global_status) {
 
-        # $global_status == true ~ 0
-        $self->status()->global( MTK::MYB::Codes::get_status_code('OK') );
-    }
-    else {
+    # $global_status == true ~ 0
+    $self->status()->global( MTK::MYB::Codes::get_status_code('OK') );
+  }
+  else {
 
-        # $global_status != true ~ 1
-        $self->status()->global( MTK::MYB::Codes::get_status_code('OK') );
-    }
+    # $global_status != true ~ 1
+    $self->status()->global( MTK::MYB::Codes::get_status_code('OK') );
+  }
 
-    if($self->_cleanup($global_status)) {
-        $self->logger()->log( message => '_cleanup OK', level => 'debug', );
-    } else {
-        $self->logger()->log( message => '_cleanup failed!', level => 'warning', );
-    }
-    $self->_exec_post();
+  if ( $self->_cleanup($global_status) ) {
+    $self->logger()->log( message => '_cleanup OK', level => 'debug', );
+  }
+  else {
+    $self->logger()->log( message => '_cleanup failed!', level => 'warning', );
+  }
+  $self->_exec_post();
 
-    $self->logger()->log( message => 'Backup finished. Returning global status: '.$global_status, level => 'debug', );
+  $self->logger()->log( message => 'Backup finished. Returning global status: ' . $global_status, level => 'debug', );
 
-    return $global_status;
+  return $global_status;
 } ## end sub run
 
 sub _run {
-    my $self = shift;
+  my $self = shift;
 
-    # Loop control
-    my $concurrency     = $self->config()->get( 'MTK::MYB::Concurrency', { Default => 1, } );
-    my @childs          = ();
-    my $forks_running   = 0;
-    my $childs_returned = 0;
+  # Loop control
+  my $concurrency     = $self->config()->get( 'MTK::MYB::Concurrency', { Default => 1, } );
+  my @childs          = ();
+  my $forks_running   = 0;
+  my $childs_returned = 0;
 
-    $self->logger()->prefix('[PARENT]');
+  $self->logger()->prefix('[PARENT]');
 
-    $self->logger()->log( message => 'Dispatching workers. Concurrency is '.$concurrency, level => 'debug', );
+  $self->logger()->log( message => 'Dispatching workers. Concurrency is ' . $concurrency, level => 'debug', );
 
-    #
-    # THIS IS THE MAIN LOOP
-    # Backup each mysqld instance
-    #
-    my $JQ = Job::Manager::->new(
-        {
-            'logger'      => $self->logger(),
-            'concurrency' => $concurrency,
-        }
-    );
-
-    my $dbms_ref = $self->config()->get('MTK::MYB::DBMS');
-
-    if ( !$dbms_ref ) {
-        #print $self->config()->dump();
-        $self->logger()->log( message => 'No DBMS defined. Aborting!', level => 'error', );
-        return;
+  #
+  # THIS IS THE MAIN LOOP
+  # Backup each mysqld instance
+  #
+  my $JQ = Job::Manager::->new(
+    {
+      'logger'      => $self->logger(),
+      'concurrency' => $concurrency,
     }
+  );
 
-    foreach my $dbms ( sort keys %{$dbms_ref} ) {
-        try {
-            my $Job = $self->_get_job($dbms);
-            if ( $JQ->add($Job) ) {
-                $self->logger()->log( message => 'Added Job for DBMS '.$dbms, level => 'debug', );
-            }
-        } ## end try
-        catch {
-            $self->logger()->log( message => 'Could not create Job for DBMS '.$dbms.', Error: '.$_, level => 'error', );
-        };
-    } ## end foreach my $dbms ( sort keys...)
+  my $dbms_ref = $self->config()->get('MTK::MYB::DBMS');
 
-    # Job::Manager return values: undef - error, 1 - ok
-    my $status = $JQ->run();
+  if ( !$dbms_ref ) {
 
-    $self->logger()->log( message => 'Collected all child stati. All Jobs have finished. Returning status: '.$status, level => 'debug', );
-    $self->logger()->prefix('');
+    #print $self->config()->dump();
+    $self->logger()->log( message => 'No DBMS defined. Aborting!', level => 'error', );
+    return;
+  } ## end if ( !$dbms_ref )
 
-    return $status;
+  foreach my $dbms ( sort keys %{$dbms_ref} ) {
+    try {
+      my $Job = $self->_get_job($dbms);
+      if ( $JQ->add($Job) ) {
+        $self->logger()->log( message => 'Added Job for DBMS ' . $dbms, level => 'debug', );
+      }
+    } ## end try
+    catch {
+      $self->logger()->log( message => 'Could not create Job for DBMS ' . $dbms . ', Error: ' . $_, level => 'error', );
+    };
+  } ## end foreach my $dbms ( sort keys...)
+
+  # Job::Manager return values: undef - error, 1 - ok
+  my $status = $JQ->run();
+
+  $self->logger()->log( message => 'Collected all child stati. All Jobs have finished. Returning status: ' . $status, level => 'debug', );
+  $self->logger()->prefix('');
+
+  return $status;
 } ## end sub _run
 
 sub _get_job {
-    my $self  = shift;
-    my $vault = shift;
+  my $self  = shift;
+  my $vault = shift;
 
-    my $Job = MTK::MYB::Job::->new(
-        {
-            'parent' => $self,
-            'vault'  => $vault,
-            'logger' => $self->logger(),
-            'config' => $self->config(),
-            'bank'   => $self->bank(),
-        }
-    );
+  my $Job = MTK::MYB::Job::->new(
+    {
+      'parent' => $self,
+      'vault'  => $vault,
+      'logger' => $self->logger(),
+      'config' => $self->config(),
+      'bank'   => $self->bank(),
+    }
+  );
 
-    return $Job;
+  return $Job;
 } ## end sub _get_job
 
 sub _exec {
-    my $self = shift;
-    my $sec  = shift;
-    my $type = shift;
-    my $opts = shift || {};
+  my $self = shift;
+  my $sec  = shift;
+  my $type = shift;
+  my $opts = shift || {};
 
-    local $opts->{AppendLog}     = 0;
-    local $opts->{CaptureOutput} = 0;
-    local $opts->{Timeout}       = $self->config()->get('MTK::MYB::ExecTimeout') || 3600;
+  local $opts->{AppendLog}     = 0;
+  local $opts->{CaptureOutput} = 0;
+  local $opts->{Timeout}       = $self->config()->get('MTK::MYB::ExecTimeout') || 3600;
 
-    my @exec = $self->config()->get_array( 'MTK::MYB::Exec' . $type );
-    return 0 if !@exec;
+  my @exec = $self->config()->get_array( 'MTK::MYB::Exec' . $type );
+  return 0 if !@exec;
 
-    my $status = 1;
-    foreach my $cmd (@exec) {
-        if ( $opts->{CurrentDB} ) {
-            $cmd =~ s/_DBNAME_/$opts->{CurrentDB}/g;
-        }
-        $cmd = $self->reporter()->fill_placeholder( [$cmd], 'myb', $self->status(), $self->logger() );
+  my $status = 1;
+  foreach my $cmd (@exec) {
+    if ( $opts->{CurrentDB} ) {
+      $cmd =~ s/_DBNAME_/$opts->{CurrentDB}/g;
+    }
+    $cmd = $self->reporter()->fill_placeholder( [$cmd], 'myb', $self->status(), $self->logger() );
 
-        # fill_placeholder will return an ARRAY_ref, so we have to assemble it again since run_cmd expects a SCALAR
-        if ( ref($cmd) eq 'ARRAY' ) {
-            $cmd = join( q{ }, @{$cmd} );
-        }
-        $self->logger()->log( message => '_exec('.$sec.q{,}.$type.') - Running CMD: '.$cmd, level => 'debug', );
-        if ( $self->sys()->run_cmd( $cmd, $opts ) ) {
-            $self->logger()->log( message => '_exec('.$sec.q{,}.$type.') - Command successfull.', level => 'debug', );
-        }
-        else {
-            $self->logger()->log( message => '_exec('.$sec.q{,}.$type.') - Command failed.', level => 'debug', );
-            $status = 0;
-        }
-    } ## end foreach my $cmd (@exec)
-    return $status;
+    # fill_placeholder will return an ARRAY_ref, so we have to assemble it again since run_cmd expects a SCALAR
+    if ( ref($cmd) eq 'ARRAY' ) {
+      $cmd = join( q{ }, @{$cmd} );
+    }
+    $self->logger()->log( message => '_exec(' . $sec . q{,} . $type . ') - Running CMD: ' . $cmd, level => 'debug', );
+    if ( $self->sys()->run_cmd( $cmd, $opts ) ) {
+      $self->logger()->log( message => '_exec(' . $sec . q{,} . $type . ') - Command successfull.', level => 'debug', );
+    }
+    else {
+      $self->logger()->log( message => '_exec(' . $sec . q{,} . $type . ') - Command failed.', level => 'debug', );
+      $status = 0;
+    }
+  } ## end foreach my $cmd (@exec)
+  return $status;
 } ## end sub _exec
 
 # Executed before mysqld(s) is/are locked
 sub _exec_pre {
-    my $self = shift;
+  my $self = shift;
 
-    my $status = 1;
+  my $status = 1;
 
-    # exec_pre are MANDATORY pre-exec scripts which MUST NOT FAIL
-    if ( $self->config()->get('MTK::MYB::ExecPre') ) {
-        $status = $self->_exec( 'default', 'Pre' );
-    }
+  # exec_pre are MANDATORY pre-exec scripts which MUST NOT FAIL
+  if ( $self->config()->get('MTK::MYB::ExecPre') ) {
+    $status = $self->_exec( 'default', 'Pre' );
+  }
 
-    # exec_pre_opt are OPTIONAL pre-exec scripts which MAY FAIL
-    # so the return code of these is just ignored
-    if ( $self->config()->get('MTK::MYB::ExecPreOpt') ) {
-        $self->_exec( 'default', 'PreOpt' );
-    }
+  # exec_pre_opt are OPTIONAL pre-exec scripts which MAY FAIL
+  # so the return code of these is just ignored
+  if ( $self->config()->get('MTK::MYB::ExecPreOpt') ) {
+    $self->_exec( 'default', 'PreOpt' );
+  }
 
-    if ($status) {
-        return 1;
-    }
-    else {
-        return;
-    }
+  if ($status) {
+    return 1;
+  }
+  else {
+    return;
+  }
 } ## end sub _exec_pre
 
 # Executed while mysqld(s) is/are locked
 sub _exec_main {
-    my $self = shift;
-    my $dbms = shift;
+  my $self = shift;
+  my $dbms = shift;
 
-    my $opts = {};
-    $opts->{CurrentDB} = $dbms;
+  my $opts = {};
+  $opts->{CurrentDB} = $dbms;
 
-    my $status = 1;
+  my $status = 1;
 
-    # global exec_main
-    if ( $self->config()->get('MTK::MYB::ExecMain') ) {
-        $status = $self->_exec( 'default', 'Main', $opts );
-    }
+  # global exec_main
+  if ( $self->config()->get('MTK::MYB::ExecMain') ) {
+    $status = $self->_exec( 'default', 'Main', $opts );
+  }
 
-    # per-instance exec_main
-    if ( $self->config()->get( 'MTK::MYB::DBMS::' . $dbms . '::ExecMain' ) ) {
-        $status = $self->_exec( $dbms, 'Main', $opts );
-    }
+  # per-instance exec_main
+  if ( $self->config()->get( 'MTK::MYB::DBMS::' . $dbms . '::ExecMain' ) ) {
+    $status = $self->_exec( $dbms, 'Main', $opts );
+  }
 
-    return $status;
+  return $status;
 } ## end sub _exec_main
 
 # Executed after mysqld(s) is/are unlocked
 sub _exec_post {
-    my $self = shift;
+  my $self = shift;
 
-    if ( $self->config()->get('MTK::MYB::ExecPost') ) {
-        return $self->_exec( 'default', 'Post' );
-    }
-    else {
-        $self->logger()->log( message => 'Nothing to do for exec_post.', level => 'debug', );
-        return;
-    }
+  if ( $self->config()->get('MTK::MYB::ExecPost') ) {
+    return $self->_exec( 'default', 'Post' );
+  }
+  else {
+    $self->logger()->log( message => 'Nothing to do for exec_post.', level => 'debug', );
+    return;
+  }
 } ## end sub _exec_post
 
 sub _merge_child_stati {
-    my $self = shift;
+  my $self = shift;
 
-    my $files_processed = 0;
+  my $files_processed = 0;
 
-    # merge cached information
-    if ( -d $self->status_cache_dir() && opendir( my $DH, $self->status_cache_dir() ) ) {
-        $self->logger()->log( message => 'Reading child stati from Status-Dir at ' . $self->status_cache_dir(), level => 'debug', );
-      FILE: while ( my $dir_entry = readdir($DH) ) {
-            next if $dir_entry =~ m/^\./;
-            my $path = $self->status_cache_dir() . q{/} . $dir_entry;
-            next unless -e $path;
-            next unless $dir_entry =~ m/child-\d+\.cache$/;
+  # merge cached information
+  if ( -d $self->status_cache_dir() && opendir( my $DH, $self->status_cache_dir() ) ) {
+    $self->logger()->log( message => 'Reading child stati from Status-Dir at ' . $self->status_cache_dir(), level => 'debug', );
+  FILE: while ( my $dir_entry = readdir($DH) ) {
+      next if $dir_entry =~ m/^\./;
+      my $path = $self->status_cache_dir() . q{/} . $dir_entry;
+      next unless -e $path;
+      next unless $dir_entry =~ m/child-\d+\.cache$/;
 
-            $self->logger()->log( message => 'Merging Child-Status from '.$path, level => 'debug', );
+      $self->logger()->log( message => 'Merging Child-Status from ' . $path, level => 'debug', );
 
-            # dbms, status and logger
-            my $child_ref = $self->cacher()->read($path);
-            if ( !$child_ref || ref($child_ref) ne 'HASH' ) {
-                $self->logger()->log( message => 'Could not read Child-Status from '.$path, level => 'warning', );
-                next FILE;
-            }
-            my $child_dbms   = $child_ref->{'dbms'};
-            my $child_stati  = $child_ref->{'stati'};
-            my $child_logbuf = $child_ref->{'logbuf'};
+      # dbms, status and logger
+      my $child_ref = $self->cacher()->read($path);
+      if ( !$child_ref || ref($child_ref) ne 'HASH' ) {
+        $self->logger()->log( message => 'Could not read Child-Status from ' . $path, level => 'warning', );
+        next FILE;
+      }
+      my $child_dbms   = $child_ref->{'dbms'};
+      my $child_stati  = $child_ref->{'stati'};
+      my $child_logbuf = $child_ref->{'logbuf'};
 
-            # merge stati
-            foreach my $dbms ( keys %{$child_stati} ) {
-                foreach my $db ( keys %{ $child_stati->{$dbms} } ) {
-                    foreach my $table ( keys %{ $child_stati->{$dbms}->{$db} } ) {
-                        foreach my $type ( keys %{ $child_stati->{$dbms}->{$db}->{$table} } ) {
-                            my $status_code = $child_stati->{$dbms}->{$db}->{$table}->{$type};
-                            my $status_text = MTK::MYB::Codes::get_status_text($status_code);
-                            $self->status()->set_table_status( $dbms, $db, $table, $status_code, $type );
-                            $self->logger()->log( message => 'Set table status of '.$dbms.q{.}.$db.q{.}.$table.q{.}.$type.' to '.$status_code.' ('.$status_text.')', level => 'debug', );
-                        } ## end foreach my $type ( keys %{ ...})
-                    } ## end foreach my $table ( keys %{...})
-                } ## end foreach my $db ( keys %{ $child_stati...})
-            } ## end foreach my $dbms ( keys %{$child_stati...})
+      # merge stati
+      foreach my $dbms ( keys %{$child_stati} ) {
+        foreach my $db ( keys %{ $child_stati->{$dbms} } ) {
+          foreach my $table ( keys %{ $child_stati->{$dbms}->{$db} } ) {
+            foreach my $type ( keys %{ $child_stati->{$dbms}->{$db}->{$table} } ) {
+              my $status_code = $child_stati->{$dbms}->{$db}->{$table}->{$type};
+              my $status_text = MTK::MYB::Codes::get_status_text($status_code);
+              $self->status()->set_table_status( $dbms, $db, $table, $status_code, $type );
+              $self->logger()->log(
+                message => 'Set table status of ' . $dbms . q{.} . $db . q{.} . $table . q{.} . $type . ' to ' . $status_code . ' (' . $status_text . ')',
+                level   => 'debug',
+              );
+            } ## end foreach my $type ( keys %{ ...})
+          } ## end foreach my $table ( keys %{...})
+        } ## end foreach my $db ( keys %{ $child_stati...})
+      } ## end foreach my $dbms ( keys %{$child_stati...})
 
-            # merge logger
-            foreach my $entry ( @{$child_logbuf} ) {
-                $self->logger()->add_to_buffer($entry);
-            }
+      # merge logger
+      foreach my $entry ( @{$child_logbuf} ) {
+        $self->logger()->add_to_buffer($entry);
+      }
 
-            # remove file after processing
-            unlink($path);
+      # remove file after processing
+      unlink($path);
 
-            $files_processed++;
-        } ## end FILE: while ( my $dir_entry = readdir...)
-        closedir($DH);
-    } ## end if ( -d $self->status_cache_dir...)
-    else {
-        $self->logger()->log( message => 'Status-Dir at ' . $self->status_cache_dir() . ' not found!', level => 'warning', );
-    }
-    return $files_processed;
+      $files_processed++;
+    } ## end FILE: while ( my $dir_entry = readdir...)
+    closedir($DH);
+  } ## end if ( -d $self->status_cache_dir...)
+  else {
+    $self->logger()->log( message => 'Status-Dir at ' . $self->status_cache_dir() . ' not found!', level => 'warning', );
+  }
+  return $files_processed;
 } ## end sub _merge_child_stati
 
 sub _cleanup {
-    my $self = shift;
-    my $ok   = shift;
+  my $self = shift;
+  my $ok   = shift;
 
-    $self->_merge_child_stati();
+  $self->_merge_child_stati();
 
-    foreach my $Plugin ( @{ $self->plugins() } ) {
-        try {
-            if($Plugin->run_cleanup_hook($ok)) {
-                $self->logger()->log( message => 'cleanup hook of Plugin '.ref($Plugin).' run successfully.', level => 'debug', );
-            } else {
-                $self->logger()->log( message => 'cleanup hook of Plugin '.ref($Plugin).' failed to run.', level => 'notice', );
-            }
-        }
-        catch {
-            $self->logger()->log( message => 'Failed to run cleanup hook of ' . ref($Plugin) . ' w/ error: ' . $_, level => 'warning', );
-        };
-    } ## end foreach my $Plugin ( @{ $self...})
+  foreach my $Plugin ( @{ $self->plugins() } ) {
+    try {
+      if ( $Plugin->run_cleanup_hook($ok) ) {
+        $self->logger()->log( message => 'cleanup hook of Plugin ' . ref($Plugin) . ' run successfully.', level => 'debug', );
+      }
+      else {
+        $self->logger()->log( message => 'cleanup hook of Plugin ' . ref($Plugin) . ' failed to run.', level => 'notice', );
+      }
+    } ## end try
+    catch {
+      $self->logger()->log( message => 'Failed to run cleanup hook of ' . ref($Plugin) . ' w/ error: ' . $_, level => 'warning', );
+    };
+  } ## end foreach my $Plugin ( @{ $self...})
 
-    return 1;
+  return 1;
 } ## end sub _cleanup
 
 sub configure {
-    my $self = shift;
+  my $self = shift;
 
-    foreach my $Plugin ( @{ $self->plugins() } ) {
-        try {
-            if($Plugin->run_config_hook()) {
-                $self->logger()->log( message => 'config hook of Plugin '.ref($Plugin).' run successfully.', level => 'debug', );
-            } else {
-                $self->logger()->log( message => 'config hook of Plugin '.ref($Plugin).' failed to run.', level => 'notice', );
-            }
-        }
-        catch {
-            $self->logger()->log( message => 'Failed to run config hook of ' . ref($Plugin) . ' w/ error: ' . $_, level => 'warning', );
-        };
-    } ## end foreach my $Plugin ( @{ $self...})
+  foreach my $Plugin ( @{ $self->plugins() } ) {
+    try {
+      if ( $Plugin->run_config_hook() ) {
+        $self->logger()->log( message => 'config hook of Plugin ' . ref($Plugin) . ' run successfully.', level => 'debug', );
+      }
+      else {
+        $self->logger()->log( message => 'config hook of Plugin ' . ref($Plugin) . ' failed to run.', level => 'notice', );
+      }
+    } ## end try
+    catch {
+      $self->logger()->log( message => 'Failed to run config hook of ' . ref($Plugin) . ' w/ error: ' . $_, level => 'warning', );
+    };
+  } ## end foreach my $Plugin ( @{ $self...})
 
-    return 1;
+  return 1;
 } ## end sub configure
 
 ############################################
@@ -500,7 +509,7 @@ sub configure {
 ############################################
 
 sub type {
-    return 'myb';
+  return 'myb';
 }
 
 no Moose;

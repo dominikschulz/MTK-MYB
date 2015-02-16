@@ -1,4 +1,5 @@
 package MTK::MYB::Restore::Job;
+
 # ABSTRACT: a MYB restore job
 
 use 5.010_000;
@@ -17,42 +18,42 @@ use MTK::MYB::Restore::Worker;
 extends 'Job::Manager::Job';
 
 has 'filename' => (
-    'is'       => 'ro',
-    'isa'      => 'Str',
-    'required' => 1,
+  'is'       => 'ro',
+  'isa'      => 'Str',
+  'required' => 1,
 );
 
 foreach my $key (qw(username password hostname)) {
-    has $key => (
-        'is'       => 'ro',
-        'isa'      => 'Str',
-        'required' => 1,
-    );
-}
+  has $key => (
+    'is'       => 'ro',
+    'isa'      => 'Str',
+    'required' => 1,
+  );
+} ## end foreach my $key (qw(username password hostname))
 
 has 'port' => (
-    'is'      => 'ro',
-    'isa'     => 'Int',
-    'default' => 3306,
+  'is'      => 'ro',
+  'isa'     => 'Int',
+  'default' => 3306,
 );
 
 sub _init_worker {
-    my $self = shift;
+  my $self = shift;
 
-    my $Worker = MTK::MYB::Restore::Worker::->new(
-        {
-            'config'   => $self->config(),
-            'logger'   => $self->logger(),
-            'filename' => $self->filename(),
-            'username' => $self->username(),
-            'password' => $self->password(),
-            'hostname' => $self->hostname(),
-            'port'     => $self->port(),
-        }
-    );
+  my $Worker = MTK::MYB::Restore::Worker::->new(
+    {
+      'config'   => $self->config(),
+      'logger'   => $self->logger(),
+      'filename' => $self->filename(),
+      'username' => $self->username(),
+      'password' => $self->password(),
+      'hostname' => $self->hostname(),
+      'port'     => $self->port(),
+    }
+  );
 
-    return $Worker;
-}
+  return $Worker;
+} ## end sub _init_worker
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

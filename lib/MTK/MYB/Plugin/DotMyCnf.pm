@@ -1,4 +1,5 @@
 package MTK::MYB::Plugin::DotMyCnf;
+
 # ABSTRACT: Plugin to read credentials from a users .my.cnf
 
 use 5.010_000;
@@ -18,41 +19,45 @@ use Config::Tiny;
 
 # extends ...
 extends 'MTK::MYB::Plugin';
+
 # has ...
 # with ...
 # initializers ...
 sub _init_priority { return 15; }
+
 # requires ...
 
 # your code here ...
 sub run_config_hook {
-    my $self = shift;
+  my $self = shift;
 
-    my $mycnf_file = $ENV{'HOME'}.'/.my.cnf';
+  my $mycnf_file = $ENV{'HOME'} . '/.my.cnf';
 
-    if ( !-e $mycnf_file ) {
-        $self->logger()->log( message => "File .my.cnf not found at $mycnf_file.", level => 'notice', );
-        return;
+  if ( !-e $mycnf_file ) {
+    $self->logger()->log( message => "File .my.cnf not found at $mycnf_file.", level => 'notice', );
+    return;
+  }
+  my $Config = Config::Tiny::->read($mycnf_file);
+  if ( !$Config ) {
+
+    # could not read file
+    return;
+  }
+
+  my $c = $Config->{'client'};
+  if ( $c && $c->{'user'} && $c->{'password'} ) {
+    if ( $c->{'user'} eq 'root' ) {
+      $self->config()->set( 'MTK::Mysql::User::DBA::Username', 'root' );
+      $self->config()->set( 'MTK::Mysql::User::DBA::Password', $c->{'password'} );
     }
-    my $Config = Config::Tiny::->read($mycnf_file);
-    if(!$Config) {
-        # could not read file
-        return;
+    else {
+      $self->config()->set( 'MTK::Mysql::User::User::Username', $c->{'user'} );
+      $self->config()->set( 'MTK::Mysql::User::User::Password', $c->{'password'} );
     }
+  } ## end if ( $c && $c->{'user'...})
 
-    my $c = $Config->{'client'};
-    if($c && $c->{'user'} && $c->{'password'}) {
-        if($c->{'user'} eq 'root') {
-            $self->config()->set('MTK::Mysql::User::DBA::Username','root');
-            $self->config()->set('MTK::Mysql::User::DBA::Password',$c->{'password'});
-        } else {
-            $self->config()->set('MTK::Mysql::User::User::Username',$c->{'user'});
-            $self->config()->set('MTK::Mysql::User::User::Password',$c->{'password'});
-        }
-    }
-
-    return 1;
-}
+  return 1;
+} ## end sub run_config_hook
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

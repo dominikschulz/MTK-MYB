@@ -1,4 +1,5 @@
 package MTK::MYB::Plugin::ListBackupDir;
+
 # ABSTRACT: Plugin to list the backup directory
 
 use 5.010_000;
@@ -13,10 +14,12 @@ use namespace::autoclean;
 # use MooseX::Params::Validate;
 # use Carp;
 use English qw( -no_match_vars );
+
 # use Try::Tiny;
 
 # extends ...
 extends 'MTK::MYB::Plugin';
+
 # has ...
 # with ...
 # initializers ...
@@ -25,40 +28,40 @@ sub _init_priority { return 10; }
 # your code here ...
 # Used to add a list of the current dataset to the log
 sub run_cleanup_hook {
-    my $self = shift;
-    my $ok = shift;
-    my $dir  = shift;
+  my $self = shift;
+  my $ok   = shift;
+  my $dir  = shift;
 
-    if ( !$dir ) {
-        $dir = $self->parent()->bank();
-        $self->logger()->log( message => "No Backup Dir given. Using default: $dir", level => 'debug', );
+  if ( !$dir ) {
+    $dir = $self->parent()->bank();
+    $self->logger()->log( message => "No Backup Dir given. Using default: $dir", level => 'debug', );
+  }
+
+  if ( $dir && !-d $dir ) {
+    $self->logger()->log( message => "Backup dir ($dir) is no directory. Aborting!", level => 4 );
+    return;
+  }
+
+  local $INPUT_RECORD_SEPARATOR = "\n";
+
+  my $cmd = '/usr/bin/find ' . $dir . ' -type f -exec ls -la {} \;';
+  $self->logger()->log( message => 'CMD: ' . $cmd, level => 'debug', );
+
+  my @out = $self->parent()->sys()->run_cmd( $cmd, { CaptureOutput => 1, Chmop => 1, } );
+
+  if (@out) {
+    foreach my $line (@out) {
+      chomp($line);
+      my ( $perms, $hls, $user, $group, $size, $day, $month, $hm, $file ) = split /\s+/, $line;
+      $self->logger()->log( message => $file . q{ - } . Format::Human::Bytes::base2($size) . " - $day $month $hm - Links: $hls", level => 'debug', );
     }
-
-    if ( $dir && !-d $dir ) {
-        $self->logger()->log( message => "Backup dir ($dir) is no directory. Aborting!", level => 4 );
-        return;
-    }
-
-    local $INPUT_RECORD_SEPARATOR = "\n";
-
-    my $cmd = '/usr/bin/find ' . $dir . ' -type f -exec ls -la {} \;';
-    $self->logger()->log( message => 'CMD: ' . $cmd, level => 'debug', );
-
-    my @out = $self->parent()->sys()->run_cmd( $cmd, { CaptureOutput => 1, Chmop => 1, } );
-
-    if (@out) {
-        foreach my $line (@out) {
-            chomp($line);
-            my ( $perms, $hls, $user, $group, $size, $day, $month, $hm, $file ) = split /\s+/, $line;
-            $self->logger()->log( message => $file.q{ - } . Format::Human::Bytes::base2($size) . " - $day $month $hm - Links: $hls", level => 'debug', );
-        }
-        return 1;
-    }
-    else {
-        $self->logger()->log( message => 'Failed to execute command. Error: '.$OS_ERROR, level => 'error', );
-        return;
-    }
-}
+    return 1;
+  } ## end if (@out)
+  else {
+    $self->logger()->log( message => 'Failed to execute command. Error: ' . $OS_ERROR, level => 'error', );
+    return;
+  }
+} ## end sub run_cleanup_hook
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

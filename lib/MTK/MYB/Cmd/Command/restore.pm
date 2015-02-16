@@ -1,4 +1,5 @@
 package MTK::MYB::Cmd::Command::restore;
+
 # ABSTRACT: Restore command for MYB
 
 use 5.010_000;
@@ -18,14 +19,15 @@ use MTK::MYB::Restore;
 
 # extends ...
 extends 'MTK::MYB::Cmd::Command';
+
 # has ...
 has 'dumpdir' => (
-    'is'    => 'ro',
-    'isa'   => 'Str',
-    'required' => 1,
-    'traits' => [qw(Getopt)],
-    'cmd_aliases' => 'd',
-    'documentation' => 'The source directory for restoring the backup',
+  'is'            => 'ro',
+  'isa'           => 'Str',
+  'required'      => 1,
+  'traits'        => [qw(Getopt)],
+  'cmd_aliases'   => 'd',
+  'documentation' => 'The source directory for restoring the backup',
 );
 
 # with ...
@@ -33,39 +35,39 @@ has 'dumpdir' => (
 
 # your code here ...
 sub execute {
-    my $self = shift;
+  my $self = shift;
 
-    # TODO restore backup
-    my $dumpdir = $self->dumpdir();
-    if ( !$dumpdir ) {
-        print "Error. Dumpdir not defined. Aborting.\n";
-        return;
+  # TODO restore backup
+  my $dumpdir = $self->dumpdir();
+  if ( !$dumpdir ) {
+    print "Error. Dumpdir not defined. Aborting.\n";
+    return;
+  }
+
+  # remove trailing slash from dumpdir, if given
+  $dumpdir =~ s#/$##;
+
+  # test for existance of dumpdir
+  if ( !-d $dumpdir ) {
+    print "Error. Dir $dumpdir not found.\n";
+    return;
+  }
+
+  print "RESTORING FROM $dumpdir ...\n";
+
+  my $Restore = MTK::MYB::Restore::->new(
+    {
+      'config'    => $self->config(),
+      'logger'    => $self->logger(),
+      'backupdir' => $dumpdir,
     }
+  );
 
-    # remove trailing slash from dumpdir, if given
-    $dumpdir =~ s#/$##;
-
-    # test for existance of dumpdir
-    if ( !-d $dumpdir ) {
-        print "Error. Dir $dumpdir not found.\n";
-        return;
-    }
-
-    print "RESTORING FROM $dumpdir ...\n";
-
-    my $Restore = MTK::MYB::Restore::->new(
-        {
-            'config'    => $self->config(),
-            'logger'    => $self->logger(),
-            'backupdir' => $dumpdir,
-        }
-    );
-
-    return $Restore->run();
-}
+  return $Restore->run();
+} ## end sub execute
 
 sub abstract {
-    return 'Restore some backups!';
+  return 'Restore some backups!';
 }
 
 no Moose;

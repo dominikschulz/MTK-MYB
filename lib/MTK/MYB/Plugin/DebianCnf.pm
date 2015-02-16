@@ -1,4 +1,5 @@
 package MTK::MYB::Plugin::DebianCnf;
+
 # ABSTRACT: Plugin to read credentials from a debian.cnf
 
 use 5.010_000;
@@ -18,6 +19,7 @@ use Config::Tiny;
 
 # extends ...
 extends 'MTK::MYB::Plugin';
+
 # has ...
 # with ...
 # initializers ...
@@ -25,29 +27,30 @@ sub _init_priority { return 20; }
 
 # your code here ...
 sub run_config_hook {
-    my $self = shift;
-    my $debcnf = shift || '/etc/mysql/debian.cnf';
+  my $self = shift;
+  my $debcnf = shift || '/etc/mysql/debian.cnf';
 
-    if ( !-e $debcnf ) {
-        $self->logger()->log( message => "File debian.cnf not found at $debcnf", level => 'notice', );
-        return;
-    }
+  if ( !-e $debcnf ) {
+    $self->logger()->log( message => "File debian.cnf not found at $debcnf", level => 'notice', );
+    return;
+  }
 
-    my $Config = Config::Tiny::->read($debcnf);
-    if(!$Config) {
-        # could not read file
-        $self->logger()->log( message => 'Could not parse '.$debcnf, level => 'warning', );
-        return;
-    }
+  my $Config = Config::Tiny::->read($debcnf);
+  if ( !$Config ) {
 
-    my $c = $Config->{'client'};
-    if($c && $c->{'user'} && $c->{'password'}) {
-        $self->config()->set('MTK::Mysql::User::DebianSysMaint::Username',$c->{'user'});
-        $self->config()->set('MTK::Mysql::User::DebianSysMaint::Password',$c->{'password'});
-    }
+    # could not read file
+    $self->logger()->log( message => 'Could not parse ' . $debcnf, level => 'warning', );
+    return;
+  } ## end if ( !$Config )
 
-    return 1;
-}
+  my $c = $Config->{'client'};
+  if ( $c && $c->{'user'} && $c->{'password'} ) {
+    $self->config()->set( 'MTK::Mysql::User::DebianSysMaint::Username', $c->{'user'} );
+    $self->config()->set( 'MTK::Mysql::User::DebianSysMaint::Password', $c->{'password'} );
+  }
+
+  return 1;
+} ## end sub run_config_hook
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

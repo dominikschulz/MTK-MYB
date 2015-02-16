@@ -1,4 +1,5 @@
 package MTK::MYB::Job;
+
 # ABSTRACT: an MYB Job
 
 use 5.010_000;
@@ -17,52 +18,52 @@ use MTK::MYB::Worker;
 extends 'Job::Manager::Job';
 
 has 'parent' => (
-    'is'       => 'ro',
-    'isa'      => 'MTK::MYB',
-    'required' => 1,
+  'is'       => 'ro',
+  'isa'      => 'MTK::MYB',
+  'required' => 1,
 );
 
 has 'verbose' => (
-    'is'      => 'rw',
-    'isa'     => 'Bool',
-    'default' => 0,
+  'is'      => 'rw',
+  'isa'     => 'Bool',
+  'default' => 0,
 );
 
 has 'dry' => (
-    'is'      => 'ro',
-    'isa'     => 'Bool',
-    'default' => 0,
+  'is'      => 'ro',
+  'isa'     => 'Bool',
+  'default' => 0,
 );
 
 has 'bank' => (
-    'is'       => 'ro',
-    'isa'      => 'Str',
-    'required' => 1,
+  'is'       => 'ro',
+  'isa'      => 'Str',
+  'required' => 1,
 );
 
 has 'vault' => (
-    'is'       => 'ro',
-    'isa'      => 'Str',
-    'required' => 1,
+  'is'       => 'ro',
+  'isa'      => 'Str',
+  'required' => 1,
 );
 
 sub _init_worker {
-    my $self = shift;
+  my $self = shift;
 
-    my $Worker = MTK::MYB::Worker::->new(
-        {
-            'config'  => $self->config(),
-            'logger'  => $self->logger(),
-            'parent'  => $self->parent(),
-            'verbose' => $self->verbose(),
-            'dry'     => $self->dry(),
-            'bank'    => $self->bank(),
-            'vault'   => $self->vault(),
-        }
-    );
+  my $Worker = MTK::MYB::Worker::->new(
+    {
+      'config'  => $self->config(),
+      'logger'  => $self->logger(),
+      'parent'  => $self->parent(),
+      'verbose' => $self->verbose(),
+      'dry'     => $self->dry(),
+      'bank'    => $self->bank(),
+      'vault'   => $self->vault(),
+    }
+  );
 
-    return $Worker;
-}
+  return $Worker;
+} ## end sub _init_worker
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

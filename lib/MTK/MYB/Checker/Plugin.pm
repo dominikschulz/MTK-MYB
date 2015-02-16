@@ -1,4 +1,5 @@
 package MTK::MYB::Checker::Plugin;
+
 # ABSTRACT: the base class for any MYB checker plugin
 
 use 5.010_000;
@@ -19,24 +20,25 @@ use namespace::autoclean;
 # has ...
 # with ...
 with qw(Log::Tree::RequiredLogger Config::Yak::RequiredConfig);
+
 # initializers ...
 
 # your code here ...
 sub priority { return 10; }
 
 sub run_prepare_hook {
-    my $self = shift;
-    my $JQ = shift;
+  my $self = shift;
+  my $JQ   = shift;
 
-    return;
-}
+  return;
+} ## end sub run_prepare_hook
 
 sub run_cleanup_hook {
-    my $self = shift;
-    my $status = shift;
+  my $self   = shift;
+  my $status = shift;
 
-    return;
-}
+  return;
+} ## end sub run_cleanup_hook
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

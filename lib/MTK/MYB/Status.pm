@@ -1,4 +1,5 @@
 package MTK::MYB::Status;
+
 # ABSTRACT: a MYB backup status object
 
 use 5.010_000;
@@ -14,101 +15,101 @@ use namespace::autoclean;
 
 # global status, used for misc. purposes. the default value of '1' means error
 has 'global' => (
-    'is'      => 'rw',
-    'isa'     => 'Num',
-    'default' => 1,
+  'is'      => 'rw',
+  'isa'     => 'Num',
+  'default' => 1,
 );
 
 has 'dbms' => (
-    'is'      => 'rw',
-    'isa'     => 'HashRef',
-    'default' => sub { {} },
+  'is'      => 'rw',
+  'isa'     => 'HashRef',
+  'default' => sub { {} },
 );
 
 has 'exec' => (
-    'is'      => 'rw',
-    'isa'     => 'ArrayRef',
-    'default' => sub { [] },
+  'is'      => 'rw',
+  'isa'     => 'ArrayRef',
+  'default' => sub { [] },
 );
 
 sub set_table_status {
-    my $self   = shift;
-    my $dbms   = shift;
-    my $db     = shift;
-    my $table  = shift;
-    my $status = shift;
-    my $type   = shift;
+  my $self   = shift;
+  my $dbms   = shift;
+  my $db     = shift;
+  my $table  = shift;
+  my $status = shift;
+  my $type   = shift;
 
-    $self->dbms()->{$dbms}->{$db}->{$table}->{$type} = $status;
+  $self->dbms()->{$dbms}->{$db}->{$table}->{$type} = $status;
 
-    # return the value set
-    return $self->dbms()->{$dbms}->{$db}->{$table}->{$type};
-}
+  # return the value set
+  return $self->dbms()->{$dbms}->{$db}->{$table}->{$type};
+} ## end sub set_table_status
 
 sub tables {
-    my $self = shift;
+  my $self = shift;
 
-    return $self->_get_type('table');
+  return $self->_get_type('table');
 }
 
 sub dumps {
-    my $self = shift;
+  my $self = shift;
 
-    return $self->_get_type('dump');
+  return $self->_get_type('dump');
 }
 
 sub structs {
-    my $self = shift;
+  my $self = shift;
 
-    return $self->_get_type('struct');
+  return $self->_get_type('struct');
 }
 
 sub _get_type {
-    my $self = shift;
-    my $type = shift;
+  my $self = shift;
+  my $type = shift;
 
-    my $data_ref = {};
-    foreach my $dbms ( keys %{ $self->dbms() } ) {
-        foreach my $db ( keys %{ $self->dbms()->{$dbms} } ) {
-            foreach my $table ( keys %{ $self->dbms()->{$dbms}->{$db} } ) {
-                if ( defined( $self->dbms()->{$dbms}->{$db}->{$table}->{$type} ) ) {
-                    my $status = $self->dbms()->{$dbms}->{$db}->{$table}->{$type};
-                    $data_ref->{$dbms}->{$db}->{$table} = $status;
-                }
-            }
+  my $data_ref = {};
+  foreach my $dbms ( keys %{ $self->dbms() } ) {
+    foreach my $db ( keys %{ $self->dbms()->{$dbms} } ) {
+      foreach my $table ( keys %{ $self->dbms()->{$dbms}->{$db} } ) {
+        if ( defined( $self->dbms()->{$dbms}->{$db}->{$table}->{$type} ) ) {
+          my $status = $self->dbms()->{$dbms}->{$db}->{$table}->{$type};
+          $data_ref->{$dbms}->{$db}->{$table} = $status;
         }
-    }
+      } ## end foreach my $table ( keys %{...})
+    } ## end foreach my $db ( keys %{ $self...})
+  } ## end foreach my $dbms ( keys %{ ...})
 
-    return $data_ref;
-}
+  return $data_ref;
+} ## end sub _get_type
 
 sub ok {
-    my $self = shift;
+  my $self = shift;
 
-    my $sum = $self->global();
+  my $sum = $self->global();
 
-    foreach my $rv ( @{ $self->exec() } ) {
-        $sum += $rv;
-    }
+  foreach my $rv ( @{ $self->exec() } ) {
+    $sum += $rv;
+  }
 
-    foreach my $dbms ( keys %{ $self->dbms() } ) {
-        foreach my $db ( keys %{ $self->dbms()->{$dbms} } ) {
-            foreach my $table ( keys %{ $self->dbms()->{$dbms}->{$db} } ) {
-                foreach my $type ( keys %{ $self->dbms()->{$dbms}->{$db}->{$table} } ) {
-                    my $object_status = $self->dbms()->{$dbms}->{$db}->{$table}->{$type};
-                    $sum += $object_status if $object_status >= 0;
-                }
-            }
+  foreach my $dbms ( keys %{ $self->dbms() } ) {
+    foreach my $db ( keys %{ $self->dbms()->{$dbms} } ) {
+      foreach my $table ( keys %{ $self->dbms()->{$dbms}->{$db} } ) {
+        foreach my $type ( keys %{ $self->dbms()->{$dbms}->{$db}->{$table} } ) {
+          my $object_status = $self->dbms()->{$dbms}->{$db}->{$table}->{$type};
+          $sum += $object_status if $object_status >= 0;
         }
-    }
+      } ## end foreach my $table ( keys %{...})
+    } ## end foreach my $db ( keys %{ $self...})
+  } ## end foreach my $dbms ( keys %{ ...})
 
-    if ( !$sum ) {
-        return 1;    # everything ok
-    }
-    else {
-        return;      # some error
-    }
-}
+  if ( !$sum ) {
+    return 1;    # everything ok
+  }
+  else {
+    return;      # some error
+  }
+} ## end sub ok
 
 no Moose;
 __PACKAGE__->meta->make_immutable;

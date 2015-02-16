@@ -1,4 +1,5 @@
 package MTK::MYB::Cmd::Command;
+
 # ABSTRACT: baseclass for any MYB command
 
 use 5.010_000;
@@ -19,41 +20,45 @@ use Log::Tree;
 
 # extends ...
 extends 'MooseX::App::Cmd::Command';
+
 # has ...
 has '_config' => (
-    'is'    => 'rw',
-    'isa'   => 'Config::Yak',
-    'lazy'  => 1,
-    'builder' => '_init_config',
-    'accessor' => 'config',
+  'is'       => 'rw',
+  'isa'      => 'Config::Yak',
+  'lazy'     => 1,
+  'builder'  => '_init_config',
+  'accessor' => 'config',
 );
 
 has '_logger' => (
-    'is'    => 'rw',
-    'isa'   => 'Log::Tree',
-    'lazy'  => 1,
-    'builder' => '_init_logger',
-    'accessor' => 'logger',
+  'is'       => 'rw',
+  'isa'      => 'Log::Tree',
+  'lazy'     => 1,
+  'builder'  => '_init_logger',
+  'accessor' => 'logger',
 );
+
 # with ...
 # initializers ...
 sub _init_config {
-    my $self = shift;
+  my $self = shift;
 
-    my $Config = Config::Yak::->new({
-        'locations'     => [qw(conf /etc/mtk)],
-    });
+  my $Config = Config::Yak::->new(
+    {
+      'locations' => [qw(conf /etc/mtk)],
+    }
+  );
 
-    return $Config;
-}
+  return $Config;
+} ## end sub _init_config
 
 sub _init_logger {
-    my $self = shift;
+  my $self = shift;
 
-    my $Logger = Log::Tree::->new('mysqlbackup');
+  my $Logger = Log::Tree::->new('mysqlbackup');
 
-    return $Logger;
-}
+  return $Logger;
+} ## end sub _init_logger
 
 # your code here ...
 

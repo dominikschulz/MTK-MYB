@@ -1,4 +1,5 @@
 package MTK::MYB::Cmd::Command::run;
+
 # ABSTRACT: Run the MYB
 
 use 5.010_000;
@@ -19,47 +20,53 @@ use MTK::MYB;
 
 # extends ...
 extends 'MTK::MYB::Cmd::Command';
+
 # has ...
 has '_pidfile' => (
-    'is'    => 'ro',
-    'isa'   => 'Linux::Pidfile',
-    'lazy'  => 1,
-    'builder' => '_init_pidfile',
+  'is'      => 'ro',
+  'isa'     => 'Linux::Pidfile',
+  'lazy'    => 1,
+  'builder' => '_init_pidfile',
 );
+
 # with ...
 # initializers ...
 sub _init_pidfile {
-    my $self = shift;
+  my $self = shift;
 
-    my $PID = Linux::Pidfile::->new({
-        'pidfile'   => $self->config()->get('MTK::MYB::Pidfile', { Default => '/var/run/myb.pid', }),
-        'logger'    => $self->logger(),
-    });
+  my $PID = Linux::Pidfile::->new(
+    {
+      'pidfile' => $self->config()->get( 'MTK::MYB::Pidfile', { Default => '/var/run/myb.pid', } ),
+      'logger'  => $self->logger(),
+    }
+  );
 
-    return $PID;
-}
+  return $PID;
+} ## end sub _init_pidfile
 
 # your code here ...
 
 sub execute {
-    my $self = shift;
+  my $self = shift;
 
-    $self->_pidfile()->create() or die('Script already running.');
+  $self->_pidfile()->create() or die('Script already running.');
 
-    my $MYB = MTK::MYB::->new({
-        'config'    => $self->config(),
-        'logger'    => $self->logger(),
-    });
+  my $MYB = MTK::MYB::->new(
+    {
+      'config' => $self->config(),
+      'logger' => $self->logger(),
+    }
+  );
 
-    my $status = $MYB->run();
+  my $status = $MYB->run();
 
-    $self->_pidfile()->remove();
+  $self->_pidfile()->remove();
 
-    return $status;
-}
+  return $status;
+} ## end sub execute
 
 sub abstract {
-    return 'Make some backups^!°';
+  return 'Make some backups^!°';
 }
 
 no Moose;
