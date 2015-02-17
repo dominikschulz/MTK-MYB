@@ -807,7 +807,7 @@ sub _run {
   # Record the slave status
   my $ss = $DBH->get_slave_status();
   if ( $ss && ref($ss) eq 'HASH' ) {
-    $secbehind_post = $ss->{'Seconds_Behind_Master'};
+    $secbehind_post = $ss->{'Seconds_Behind_Master'} || -1;
   }
 
   # Append to log, for reporting
@@ -1298,7 +1298,7 @@ sub _record_master_status {
   my $master_status = "SHOW MASTER STATUS\n";
   $master_status .= "File: $file\nPosition: $pos\n";
   $master_status .= "-----\n";
-  if ( &File::Blarf::blarf( $filename, $master_status, { Append => 1, Flock => 1, Newline => 1, } ) ) {
+  if ( File::Blarf::blarf( $filename, $master_status, { Append => 1, Flock => 1, Newline => 1, } ) ) {
     $self->logger()->log( message => 'Wrote master status to ' . $filename, level => 'debug', );
     return ( $pos, $file );
   }
@@ -1322,7 +1322,8 @@ sub _record_slave_status {
       $value = 'n/a' unless defined($value);
       $slave_status .= "$key = $value\n";
     }
-    $secbehind = $ss->{'Seconds_Behind_Master'};
+    # on recent mysql releases Seconds_Behind_Master may be undefined
+    $secbehind = $ss->{'Seconds_Behind_Master'} || -1;
   } ## end if ( $ss && ref($ss) eq...)
   else {
     $slave_status .= "No Slave Status.\n";

@@ -216,7 +216,7 @@ sub run {
   else {
 
     # $global_status != true ~ 1
-    $self->status()->global( MTK::MYB::Codes::get_status_code('OK') );
+    $self->status()->global( MTK::MYB::Codes::get_status_code('UNDEF-ERROR') );
   }
 
   if ( $self->_cleanup($global_status) ) {
@@ -227,7 +227,11 @@ sub run {
   }
   $self->_exec_post();
 
-  $self->logger()->log( message => 'Backup finished. Returning global status: ' . $global_status, level => 'debug', );
+  if( $global_status ) {
+    $self->logger()->log( message => 'Backup finished. Returning global status: ' . $global_status, level => 'debug', );
+  } else {
+    $self->logger()->log( message => 'Backup failed w/ undefined error. Please check the logs!', level => 'error', );
+  }
 
   return $global_status;
 } ## end sub run
@@ -279,8 +283,12 @@ sub _run {
 
   # Job::Manager return values: undef - error, 1 - ok
   my $status = $JQ->run();
+  if($status) {
+    $self->logger()->log( message => 'Collected all child stati. All Jobs have finished. Returning status: ' . $status, level => 'debug', );
+  } else {
+    $self->logger()->log( message => 'Jobs failed to run. Please check error logs!', level => 'warning', );
+  }
 
-  $self->logger()->log( message => 'Collected all child stati. All Jobs have finished. Returning status: ' . $status, level => 'debug', );
   $self->logger()->prefix('');
 
   return $status;

@@ -1,5 +1,8 @@
 Revision history for MTK-MYB
 
+0.31  2015-02-17
+      Handle undefined Seconds_Behind_master on recent MySQL releases.
+
 0.30  2014-03-24
       Bugfix to configcheck command
 
